@@ -1,15 +1,18 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Route, Routes } from 'react-router-dom';
+import { MobileLayout } from './components/layouts/MobileLayout';
+import './index.css';
+import { Home } from './routes/home';
+import { Login } from './routes/login';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-    </>
-  )
+      <MobileLayout>
+        <Routes>
+            <Route path='/' element={<Home/>} />
+            <Route path='/login' element={<Login/>} />
+        </Routes>
+      </MobileLayout>
+  );
 }
 
-export default App
+export default App;
