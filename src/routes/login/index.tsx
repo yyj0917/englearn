@@ -14,7 +14,7 @@ export function Login() {
     <div className='flex-center h-screen w-full'>
       <div className='w-full p-8'>
         <img
-          src={'src/assets/img/main-logo.png'}
+          src={'/assets/img/main-logo.png'}
           alt='logo'
           className='object-contain'
         />
