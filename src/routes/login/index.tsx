@@ -1,5 +1,5 @@
+import KakaoLogo from '@/public/assets/kakao-logo.svg';
 import { ArrowDownIcon } from 'lucide-react';
-import KakaoLogo from '../../assets/kakao-logo.svg';
 import { useSupabaseAuth } from '../../hooks/useAuth';
 export function Login() {
   const { kakaoLogin } = useSupabaseAuth();
