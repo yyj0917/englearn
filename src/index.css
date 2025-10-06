@@ -1,11 +1,31 @@
 @import 'tailwindcss';
 
+@font-face {
+  font-family: 'D2Coding';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_three@1.0/D2Coding.woff')
+    format('woff');
+  font-weight: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'OngleebDaisy';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2508-2@1.0/Ownglyph_daisy-Rg.woff2')
+    format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
 html {
-  @apply bg-gray-50
+  @apply bg-gray-50;
+}
+
+body {
+  font-family: 'D2Coding', monospace;
 }
 @theme inline {
   --color-primary: oklch(0.55 0.25 240);
-
+  --font-OngleebDaisy: 'OngleebDaisy', sans-serif;
+  --font-D2Coding: 'D2Coding', monospace;
 }
 @layer components {
   .mobile-area {
@@ -27,5 +47,34 @@ html {
     font-style: normal;
     font-weight: 700;
     line-height: 140%; /* 22.5px */
+  }
+
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary) transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--color-primary);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(0.45 0.25 240);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-corner {
+    background: transparent;
   }
 }

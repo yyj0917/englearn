@@ -1,13 +1,14 @@
 /** @type {import("eslint").Linter.Config} */
+const dirname = __dirname;
 const config = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    project: true,
+    project: ['./tsconfig.eslint.json'],
+    tsconfigRootDir: dirname,
   },
   ignorePatterns: ['node_modules', 'dist'],
   plugins: ['@typescript-eslint'],
   extends: [
-    'next/core-web-vitals',
     'plugin:@typescript-eslint/recommended-type-checked',
     'plugin:@typescript-eslint/stylistic-type-checked',
   ],

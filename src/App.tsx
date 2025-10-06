@@ -1,17 +1,25 @@
 import { Route, Routes } from 'react-router-dom';
+import { BottomNavigation } from './components/layouts/BottomNavigation';
+import { Header } from './components/layouts/Header';
 import { MobileLayout } from './components/layouts/MobileLayout';
 import './index.css';
 import { Home } from './routes/home';
 import { Login } from './routes/login';
+import { MyPage } from './routes/mypage';
+import { WordUpload } from './routes/word-upload';
 
 function App() {
   return (
-      <MobileLayout>
-        <Routes>
-            <Route path='/' element={<Home/>} />
-            <Route path='/login' element={<Login/>} />
-        </Routes>
-      </MobileLayout>
+    <MobileLayout>
+      <Header />
+      <Routes>
+        <Route path='/' element={<Home />} />
+        <Route path='/login' element={<Login />} />
+        <Route path='/word-upload' element={<WordUpload />} />
+        <Route path='/mypage' element={<MyPage />} />
+      </Routes>
+      <BottomNavigation />
+    </MobileLayout>
   );
 }
 
