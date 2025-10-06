@@ -1,5 +1,6 @@
-import KakaoLogo from '@/public/assets/kakao-logo.svg';
 import { ArrowDownIcon } from 'lucide-react';
+import MainLogo from '../../assets/img/main-logo.png';
+import KakaoLogo from '../../assets/kakao-logo.svg';
 import { useSupabaseAuth } from '../../hooks/useAuth';
 export function Login() {
   const { kakaoLogin } = useSupabaseAuth();
@@ -13,11 +14,7 @@ export function Login() {
   return (
     <div className='flex-center h-screen w-full'>
       <div className='w-full p-8'>
-        <img
-          src={'/assets/img/main-logo.png'}
-          alt='logo'
-          className='object-contain'
-        />
+        <img src={MainLogo} alt='logo' className='object-contain' />
         <div className='flex-col-center gap-4'>
           <ArrowDownIcon className='text-primary size-12 animate-bounce opacity-80' />
           <p className='text-md text-center text-gray-500'>
