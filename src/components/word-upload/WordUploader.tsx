@@ -99,7 +99,7 @@ export function WordUploader() {
   };
 
   return (
-    <div className='flex-center mx-auto h-full w-full max-w-2xl p-6'>
+    <div className='flex-col-center mx-auto h-full w-full max-w-2xl gap-2 p-6'>
       {/* 상태 메시지 */}
       {renderStatusMessage() && (
         <div className='mb-6 rounded-lg bg-gray-50 p-4'>
