@@ -6,6 +6,7 @@ export interface DontknowWord {
   category: string;
   comment: string;
   user_id: string;
+  is_checked: boolean;
 }
 
 export interface CreateDontknowWordData {
@@ -24,4 +25,5 @@ export interface UpdateDontknowWordData {
   comment?: string;
   created_at?: string;
   user_id?: string;
+  is_checked?: boolean;
 }

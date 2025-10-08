@@ -1,9 +1,9 @@
-import { Check } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { type DontknowWord } from '../../types/word/word.types';
 
-interface WordCardProps {
+interface CheckWordCardProps {
   word: Pick<
     DontknowWord,
     'id' | 'word_en' | 'word_kr' | 'comment' | 'created_at' | 'is_checked'
@@ -11,12 +11,12 @@ interface WordCardProps {
   onDismiss?: () => void;
 }
 
-export function WordCard({ word, onDismiss }: WordCardProps) {
+export function CheckWordCard({ word, onDismiss }: CheckWordCardProps) {
   const [isDismissing, setIsDismissing] = useState(false);
-  const handleCheck = async () => {
+  const handleCancel = async () => {
     const { error } = await supabase
       .from('dontknow_word')
-      .update({ is_checked: true })
+      .update({ is_checked: false })
       .eq('id', word.id);
     if (error) {
       console.error(error);
@@ -27,15 +27,20 @@ export function WordCard({ word, onDismiss }: WordCardProps) {
     <div
       className={`border-primary/40 relative rounded-lg border bg-white p-4 shadow-sm transition-all duration-300 ease-out ${
         isDismissing
-          ? 'translate-x-full opacity-0'
+          ? '-translate-x-full opacity-0'
           : 'translate-x-0 opacity-100'
       }`}
       onTransitionEnd={() => {
         if (isDismissing) onDismiss?.();
       }}
     >
-      <div className='text-primary mb-1 text-sm'>
+      <div className='text-primary mb-1 flex items-center justify-between gap-1 text-sm'>
         <span>{new Date(word.created_at).toLocaleDateString()}</span>
+        {word.is_checked && (
+          <span className='bg-primary flex-center rounded-full p-0.5 text-sm text-white'>
+            <Check className='h-4 w-4' />
+          </span>
+        )}
       </div>
       <h3 className='mb-2 text-xl font-bold text-gray-900'>{word.word_en}</h3>
       <ul className='mb-2 list-inside list-disc text-gray-700'>
@@ -53,17 +58,17 @@ export function WordCard({ word, onDismiss }: WordCardProps) {
         <p className='text-sm text-gray-500'>💬 {word.comment}</p>
       )}
       <button
-        className='bg-primary/10 text-primary border-primary hover:bg-primary/20 absolute right-4 bottom-4 flex cursor-pointer items-center gap-1 rounded-lg border px-2.5 py-1.5'
+        className='absolute right-4 bottom-4 flex cursor-pointer items-center gap-1 rounded-lg border border-red-300 bg-red-50 px-2.5 py-1.5 text-red-600 hover:bg-red-100'
         type='button'
         onClick={() => {
           if (isDismissing) return;
           setIsDismissing(true);
-          void handleCheck();
+          void handleCancel();
         }}
-        aria-label='확인'
+        aria-label='취소'
       >
-        <Check className='h-4 w-4' />
-        <span className='text-sm'>확인</span>
+        <X className='h-4 w-4' />
+        <span className='text-sm'>취소</span>
       </button>
     </div>
   );

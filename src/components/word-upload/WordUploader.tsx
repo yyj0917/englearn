@@ -99,16 +99,7 @@ export function WordUploader() {
   };
 
   return (
-    <div className='mx-auto w-full max-w-2xl p-6'>
-      <div className='mb-8 text-center'>
-        <h1 className='mb-2 text-3xl font-bold text-gray-800'>
-          새로운 단어 추가
-        </h1>
-        <p className='text-gray-600'>영어 단어와 한글 뜻을 입력해주세요</p>
-      </div>
-
-      {/* 테이블 선택은 WordForm 내부에서 처리 */}
-
+    <div className='flex-center mx-auto h-full w-full max-w-2xl p-6'>
       {/* 상태 메시지 */}
       {renderStatusMessage() && (
         <div className='mb-6 rounded-lg bg-gray-50 p-4'>
@@ -117,7 +108,7 @@ export function WordUploader() {
       )}
 
       {/* 폼 */}
-      <div className='rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
+      <div className='w-full rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
         {isAuthenticated ? (
           <WordForm
             onSubmit={handleWordSubmit}
@@ -129,16 +120,6 @@ export function WordUploader() {
             로그인 후 단어를 업로드할 수 있습니다.
           </div>
         )}
-      </div>
-
-      {/* 도움말 */}
-      <div className='mt-8 text-center text-sm text-gray-500'>
-        <p>
-          💡 <strong>팁:</strong> 카테고리와 코멘트는 선택사항입니다.
-        </p>
-        <p>
-          카테고리로 단어를 분류하고, 코멘트로 기억하기 쉬운 팁을 남겨보세요!
-        </p>
       </div>
     </div>
   );

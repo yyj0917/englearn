@@ -1,4 +1,4 @@
-import { Home, Upload, User } from 'lucide-react';
+import { Home, ListChecks, Upload, User } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 interface NavigationItem {
@@ -19,6 +19,11 @@ const navigationItems: NavigationItem[] = [
     icon: Upload,
   },
   {
+    path: '/check-words',
+    label: '확인한 단어',
+    icon: ListChecks,
+  },
+  {
     path: '/mypage',
     label: '마이페이지',
     icon: User,
@@ -35,7 +40,7 @@ export function BottomNavigation() {
 
   if (location.pathname === '/login') return null;
   return (
-    <nav className='mobile-area fixed right-0 bottom-0 left-0 z-50 border-t border-gray-300 bg-white'>
+    <nav className='mobile-area fixed right-0 bottom-0 left-0 z-50 border-t border-gray-300 bg-white pb-4'>
       <div className='flex items-center justify-around py-2'>
         {navigationItems.map(item => {
           const Icon = item.icon;

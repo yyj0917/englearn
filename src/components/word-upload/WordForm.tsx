@@ -80,6 +80,7 @@ export function WordForm({
     };
 
     onSubmit(wordData);
+    handleReset();
   };
 
   const handleReset = () => {
@@ -178,14 +179,14 @@ export function WordForm({
               onClick={() =>
                 setFormData(prev => ({ ...prev, category: 'jargon_word' }))
               }
-              disabled={isLoading}
-              className={`rounded-md border px-4 py-3 text-sm font-medium transition-colors ${
+              disabled={true}
+              className={`rounded-md border px-4 py-3 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:bg-gray-100 ${
                 formData.category === 'jargon_word'
                   ? 'border-blue-600 bg-blue-50 text-blue-700'
                   : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-              }`}
+              } disabled:opacity-50`}
             >
-              전문 용어
+              전문용어
             </button>
           </div>
         </div>

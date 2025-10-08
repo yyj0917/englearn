@@ -76,7 +76,9 @@ export function MobileLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className='mobile-area h-screen overflow-hidden bg-white'>
       {location.pathname !== '/login' ? (
-        <div className='h-full overflow-y-auto pt-24 pb-16'>{children}</div>
+        <div className='custom-scrollbar h-full overflow-y-auto pt-16 pb-24'>
+          {children}
+        </div>
       ) : (
         children
       )}

@@ -32,6 +32,7 @@ export interface Database {
           category: string;
           comment: string;
           user_id: string;
+          is_checked: boolean;
         };
         Insert: {
           id?: string;

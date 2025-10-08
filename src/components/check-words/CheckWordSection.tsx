@@ -1,19 +1,19 @@
-import { Loader2 } from 'lucide-react';
+import { ListChecks, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/auth-store';
 import { type DontknowWord } from '../../types/word/word.types';
-import { WordCard } from './WordCard';
+import { CheckWordCard } from './CheckWordCard';
 
 type TableKey = 'dontknow_word' | 'jargon_word';
 
-export function WordSection() {
+export function CheckWordSection() {
   const [words, setWords] = useState<DontknowWord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const userId = useAuthStore(s => s.userId);
 
-  const [selectedTable, setSelectedTable] = useState<TableKey>('dontknow_word');
+  const [selectedTable] = useState<TableKey>('dontknow_word');
 
   useEffect(() => {
     let isMounted = true;
@@ -30,7 +30,7 @@ export function WordSection() {
         .from(selectedTable)
         .select('*')
         .eq('user_id', userId)
-        .eq('is_checked', false)
+        .eq('is_checked', true)
         .order('created_at', { ascending: false })
         .limit(20);
       if (!isMounted) return;
@@ -49,20 +49,10 @@ export function WordSection() {
 
   return (
     <section className='space-y-4'>
-      <nav className='flex gap-2'>
-        <button
-          className={`bg-primary/10 w-fit flex-1 rounded-lg border px-4 py-2 text-lg font-semibold ${selectedTable === 'dontknow_word' ? 'bg-primary/10 text-primary border-primary' : 'border-gray-500 bg-white text-gray-500'}`}
-          onClick={() => setSelectedTable('dontknow_word')}
-        >
-          모르는 단어
-        </button>
-        <button
-          className={`bg-primary/10 w-fit flex-1 rounded-lg border px-4 py-2 text-lg font-semibold ${selectedTable === 'jargon_word' ? 'bg-primary/10 text-primary border-primary' : 'border-gray-500 bg-white text-gray-500'}`}
-          onClick={() => setSelectedTable('jargon_word')}
-        >
-          전문 용어
-        </button>
-      </nav>
+      <h2 className='text-primary bg-primary/10 flex w-fit items-center rounded-lg border px-4 py-2 text-xl font-bold'>
+        <ListChecks className='h-6 w-6' />
+        <span className='ml-2'>확인한 단어</span>
+      </h2>
       {loading && (
         <div className='flex-col-center gap-2 py-10 text-blue-600'>
           <Loader2 className='h-6 w-6 animate-spin' />
@@ -75,7 +65,7 @@ export function WordSection() {
       {words.length > 0 && !loading && !error && (
         <div className='grid grid-cols-1 gap-4'>
           {words.map(w => (
-            <WordCard
+            <CheckWordCard
               key={`${w.user_id}-${w.id}`}
               word={w}
               onDismiss={() => {
