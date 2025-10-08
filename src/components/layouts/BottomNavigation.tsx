@@ -50,7 +50,7 @@ export function BottomNavigation() {
             <button
               key={item.path}
               onClick={() => handleNavigation(item.path)}
-              className={`flex min-w-0 flex-1 cursor-pointer flex-col items-center justify-center px-4 py-2 transition-colors duration-200 ${
+              className={`flex-col-center flex min-w-0 flex-1 cursor-pointer px-2 py-2 transition-colors duration-200 ${
                 isActive ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -60,7 +60,7 @@ export function BottomNavigation() {
                 }`}
               />
               <span
-                className={`text-xs font-medium ${
+                className={`flex-shrink-0 text-xs font-medium ${
                   isActive ? 'text-blue-600' : 'text-gray-500'
                 }`}
               >
