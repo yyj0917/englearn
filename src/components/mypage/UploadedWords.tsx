@@ -1,4 +1,4 @@
-import { Check, Loader2, Pencil, Trash2, X } from 'lucide-react';
+import { Check, Loader2, Pencil, Search, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/auth-store';
@@ -21,6 +21,7 @@ export function UploadedWords() {
   const [error, setError] = useState<string | null>(null);
   const [selectedTable, setSelectedTable] = useState<TableKey>('dontknow_word');
   const [editingWord, setEditingWord] = useState<EditState | null>(null);
+  const [localQuery, setLocalQuery] = useState('');
 
   const count = words.length;
 
@@ -161,6 +162,16 @@ export function UploadedWords() {
     return <div className='text-center text-sm text-red-600'>{error}</div>;
   }
 
+  const filteredWords = words.filter(w => {
+    const q = localQuery.trim().toLowerCase();
+    if (!q) return true;
+    const en = w.word_en.toLowerCase();
+    const kr = Array.isArray(w.word_kr)
+      ? w.word_kr.join(',')
+      : String(w.word_kr);
+    return en.includes(q) || kr.includes(q);
+  });
+
   return (
     <div className='rounded-lg border border-gray-200 bg-white p-4 shadow-sm'>
       <div className='mb-4 flex items-center justify-between'>
@@ -169,7 +180,6 @@ export function UploadedWords() {
         </h2>
         <span className='text-sm text-gray-500'>총 {count}개</span>
       </div>
-
       {/* Category Filter */}
       <div className='mb-4 flex gap-2'>
         <button
@@ -193,14 +203,24 @@ export function UploadedWords() {
           전문 용어
         </button>
       </div>
+      {/* Local search bar */}
+      <div className='relative mb-4'>
+        <input
+          value={localQuery}
+          onChange={e => setLocalQuery(e.target.value)}
+          placeholder='내 단어 검색'
+          className='w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none'
+        />
+        <Search className='text-primary absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2' />
+      </div>
 
-      {words.length === 0 ? (
+      {filteredWords.length === 0 ? (
         <div className='py-4 text-center text-sm text-gray-500'>
-          등록된 단어가 없습니다.
+          검색 결과가 없습니다.
         </div>
       ) : (
         <ul className='space-y-3'>
-          {words.map(w => (
+          {filteredWords.map(w => (
             <li key={w.id} className='rounded-md border border-gray-200 p-3'>
               {editingWord?.id === w.id ? (
                 // Edit Mode

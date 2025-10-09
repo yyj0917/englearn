@@ -1,7 +1,8 @@
 import { Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/auth-store';
+import { useSearchStore } from '../../store/search-store';
 import { type WordData } from '../../types/word/word.types';
 import { WordCard } from './WordCard';
 
@@ -17,6 +18,10 @@ export function WordSection() {
   const [selectedTable, setSelectedTable] = useState<TableKey>('dontknow_word');
   const [majorCategories, setMajorCategories] = useState<MajorCategory[]>([]);
   const [selectedMajor, setSelectedMajor] = useState<string>('all');
+
+  const query = useSearchStore(s => s.query)
+    .trim()
+    .toLowerCase();
 
   useEffect(() => {
     let isMounted = true;
@@ -56,11 +61,22 @@ export function WordSection() {
       setLoading(false);
     };
     fetchWords();
+
     return () => {
       isMounted = false;
     };
   }, [selectedTable, userId, selectedMajor]);
 
+  const filtered = useMemo(() => {
+    if (!query) return words;
+    return words.filter(w => {
+      const en = w.word_en.toLowerCase();
+      const kr = Array.isArray(w.word_kr)
+        ? w.word_kr.join(',')
+        : String(w.word_kr);
+      return en.includes(query) || kr.includes(query);
+    });
+  }, [words, query]);
   // Load user's major categories when switching to major_word
   useEffect(() => {
     let isMounted = true;
@@ -134,14 +150,14 @@ export function WordSection() {
       {error && (
         <div className='py-6 text-center text-sm text-red-600'>{error}</div>
       )}
-      {words.length === 0 && !loading && !error && (
+      {filtered.length === 0 && !loading && !error && (
         <div className='py-6 text-center text-sm text-gray-500'>
           단어가 없습니다.
         </div>
       )}
-      {words.length > 0 && !loading && !error && (
+      {filtered.length > 0 && !loading && !error && (
         <div className='grid grid-cols-1 gap-4'>
-          {words.map(w => (
+          {filtered.map(w => (
             <WordCard
               key={`${w.user_id}-${w.id}`}
               word={w}
