@@ -337,7 +337,7 @@ export function UploadedWords() {
                         </div>
                       )}
                       {w.comment && (
-                        <div className='mt-1 text-xs text-gray-500'>
+                        <div className='mt-1 text-xs break-words whitespace-pre-wrap text-gray-500'>
                           💬 {w.comment}
                         </div>
                       )}

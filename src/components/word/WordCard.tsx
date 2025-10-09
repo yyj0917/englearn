@@ -26,9 +26,9 @@ export function WordCard({ word }: WordCardProps) {
         )}
       </ul>
       {word.comment && (
-        <p className='text-sm break-words whitespace-pre-wrap text-gray-500'>
+        <div className='text-sm break-words whitespace-pre-wrap text-gray-500'>
           💬 {word.comment}
-        </p>
+        </div>
       )}
     </div>
   );

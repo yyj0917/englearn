@@ -69,9 +69,9 @@ export function CheckWordCard({
         )}
       </ul>
       {word.comment && (
-        <p className='text-sm break-words whitespace-pre-wrap text-gray-500'>
+        <div className='text-sm break-words whitespace-pre-wrap text-gray-500'>
           💬 {word.comment}
-        </p>
+        </div>
       )}
       <button
         className='mt-4 ml-auto flex w-fit cursor-pointer items-center gap-1 rounded-lg border border-red-300 bg-red-50 px-2.5 py-1.5 text-red-600 hover:bg-red-100'
