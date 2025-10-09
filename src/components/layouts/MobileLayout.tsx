@@ -13,55 +13,86 @@ export function MobileLayout({ children }: { children: React.ReactNode }) {
     const sync = async () => {
       const { data } = await supabase.auth.getSession();
       const session = data.session;
-      if (!session || !session.access_token) {
+
+      // Simple but effective validation: check for essential session data
+      if (!session || !session.access_token || !session.user?.id) {
         clear();
+        localStorage.clear();
         if (location.pathname !== '/login')
           navigate('/login', { replace: true });
         return;
       }
+
+      // Check if token is expired (simple check)
+      if (session.expires_at && session.expires_at < Date.now() / 1000) {
+        clear();
+        localStorage.clear();
+
+        if (location.pathname !== '/login')
+          navigate('/login', { replace: true });
+        return;
+      }
+
+      // Session is valid, update store
       const meta = (session.user?.user_metadata ?? {}) as {
         avatar_url?: string;
         user_name?: string;
         full_name?: string;
         email?: string;
       };
+
       setSession({
-        accessToken: session.access_token ?? null,
-        refreshToken: session.refresh_token ?? null,
+        accessToken: session.access_token,
+        refreshToken: session.refresh_token,
         expiresAt: session.expires_at ? String(session.expires_at) : null,
-        userId: session.user?.id ?? null,
-        email: session.user?.email ?? meta.email ?? null,
+        userId: session.user.id,
+        email: session.user.email ?? meta.email ?? null,
         provider:
-          (session.user?.app_metadata as { provider?: string } | undefined)
+          (session.user.app_metadata as { provider?: string } | undefined)
             ?.provider ?? null,
         avatarUrl: meta.avatar_url ?? null,
         userName: meta.user_name ?? meta.full_name ?? null,
       });
     };
+
     sync();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        if (!session || !session.access_token) {
+        // Same validation logic for auth state changes
+        if (!session || !session.access_token || !session.user?.id) {
           clear();
+          localStorage.clear();
+
           if (location.pathname !== '/login')
             navigate('/login', { replace: true });
           return;
         }
+
+        if (session.expires_at && session.expires_at < Date.now() / 1000) {
+          clear();
+          localStorage.clear();
+
+          if (location.pathname !== '/login')
+            navigate('/login', { replace: true });
+          return;
+        }
+
         const meta = (session.user?.user_metadata ?? {}) as {
           avatar_url?: string;
           user_name?: string;
           full_name?: string;
           email?: string;
         };
+
         setSession({
-          accessToken: session.access_token ?? null,
-          refreshToken: session.refresh_token ?? null,
+          accessToken: session.access_token,
+          refreshToken: session.refresh_token,
           expiresAt: session.expires_at ? String(session.expires_at) : null,
-          userId: session.user?.id ?? null,
-          email: session.user?.email ?? meta.email ?? null,
+          userId: session.user.id,
+          email: session.user.email ?? meta.email ?? null,
           provider:
-            (session.user?.app_metadata as { provider?: string } | undefined)
+            (session.user.app_metadata as { provider?: string } | undefined)
               ?.provider ?? null,
           avatarUrl: meta.avatar_url ?? null,
           userName: meta.user_name ?? meta.full_name ?? null,
