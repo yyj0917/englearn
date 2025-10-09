@@ -4,6 +4,139 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/auth-store';
 
+// Enhanced auth hook for session management
+// export const useAuth = () => {
+//   const setSession = useAuthStore(s => s.setSession);
+//   const clear = useAuthStore(s => s.clear);
+//   const navigate = useNavigate();
+//   const location = useLocation();
+//   const [isInitialized, setIsInitialized] = useState(false);
+
+//   // Enhanced session validation with proper token checking
+//   const validateSession = async (session: Session): Promise<boolean> => {
+//     if (!session || !session.access_token) {
+//       return false;
+//     }
+
+//     // Check if token is expired
+//     if (session.expires_at && session.expires_at < Date.now() / 1000) {
+//       console.log('Token expired, attempting refresh...');
+//       try {
+//         const { data: refreshData, error: refreshError } =
+//           await supabase.auth.refreshSession();
+//         if (refreshError || !refreshData.session) {
+//           console.error('Token refresh failed:', refreshError);
+//           return false;
+//         }
+//         // Update session with refreshed data
+//         session = refreshData.session;
+//       } catch (error) {
+//         console.error('Token refresh error:', error);
+//         return false;
+//       }
+//     }
+
+//     // Validate user ID exists
+//     if (!session.user?.id) {
+//       console.error('No user ID in session');
+//       return false;
+//     }
+
+//     // Test token validity by making a simple API call
+//     try {
+//       const { error } = await supabase
+//         .from('dontknow_word')
+//         .select('id')
+//         .limit(1);
+
+//       if (error && error.message.includes('JWT')) {
+//         console.error('Invalid JWT token:', error);
+//         return false;
+//       }
+//     } catch (error) {
+//       console.error('Token validation failed:', error);
+//       return false;
+//     }
+
+//     return true;
+//   };
+
+//   const handleAuthStateChange = async (
+//     event: string,
+//     session: Session | null,
+//   ) => {
+//     console.log('Auth state change:', event, !!session);
+//     if (!session) {
+//       return;
+//     }
+//     const isValid = await validateSession(session as Session);
+
+//     if (!isValid) {
+//       console.log('Invalid session, clearing auth and redirecting to login');
+//       clear();
+//       if (location.pathname !== '/login') {
+//         navigate('/login', { replace: true });
+//       }
+//       return;
+//     }
+
+//     // Session is valid, update store
+//     const meta = (session.user?.user_metadata ?? {}) as {
+//       avatar_url?: string;
+//       user_name?: string;
+//       full_name?: string;
+//       email?: string;
+//     };
+
+//     setSession({
+//       accessToken: session.access_token,
+//       refreshToken: session.refresh_token,
+//       expiresAt: session.expires_at ? String(session.expires_at) : null,
+//       userId: session.user.id,
+//       email: session.user.email ?? meta.email ?? null,
+//       provider:
+//         (session.user.app_metadata as { provider?: string })?.provider ?? null,
+//       avatarUrl: meta.avatar_url ?? null,
+//       userName: meta.user_name ?? meta.full_name ?? null,
+//     });
+//   };
+
+//   const initializeAuth = async () => {
+//     try {
+//       console.log('Initializing auth...');
+//       const { data } = await supabase.auth.getSession();
+//       await handleAuthStateChange('INITIAL_SESSION', data.session);
+//       setIsInitialized(true);
+//     } catch (error) {
+//       console.error('Auth initialization error:', error);
+//       clear();
+//       navigate('/login', { replace: true });
+//       setIsInitialized(true);
+//     }
+//   };
+
+//   const setupAuthListener = () => {
+//     const { data: listener } = supabase.auth.onAuthStateChange(
+//       async (event, session) => {
+//         console.log('Auth state change event:', event);
+//         await handleAuthStateChange(event, session);
+//       },
+//     );
+
+//     return () => {
+//       listener.subscription.unsubscribe();
+//     };
+//   };
+
+//   return {
+//     isInitialized,
+//     initializeAuth,
+//     setupAuthListener,
+//     validateSession,
+//   };
+// };
+
+// Legacy auth hook for login/signup functionality
 export const useSupabaseAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);

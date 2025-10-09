@@ -1,11 +1,12 @@
+import { useSupabaseAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/auth-store';
 export function Logout() {
   const clear = useAuthStore(s => s.clear);
   const navigate = useNavigate();
+  const { signOut } = useSupabaseAuth();
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     clear();
     navigate('/login');
   };
