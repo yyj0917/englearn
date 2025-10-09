@@ -53,6 +53,58 @@ export interface Database {
           user_id?: string;
         };
       };
+      major_word: {
+        Row: {
+          id: string;
+          word_en: string;
+          word_kr: JSON;
+          created_at: string;
+          category: string;
+          comment: string;
+          user_id: string;
+          major_category_id: string;
+        };
+        Insert: {
+          id?: string;
+          word_en: string;
+          word_kr: JSON;
+          created_at?: string;
+          category?: string;
+          comment?: string;
+          user_id: string;
+          major_category_id: string;
+        };
+        Update: {
+          id?: string;
+          word_en?: string;
+          word_kr?: JSON;
+          category?: string;
+          comment?: string;
+          created_at?: string;
+          user_id?: string;
+          major_category_id?: string;
+        };
+      };
+      major_category: {
+        Row: {
+          id: string;
+          major_name: string;
+          created_at: string;
+          user_id: string;
+        };
+        Insert: {
+          id?: string;
+          major_name: string;
+          created_at?: string;
+          user_id: string;
+        };
+        Update: {
+          id?: string;
+          major_name?: string;
+          created_at?: string;
+          user_id?: string;
+        };
+      };
     };
   };
 }

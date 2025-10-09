@@ -2,13 +2,10 @@
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import {
-  type CreateDontknowWordData,
-  type DontknowWord,
-} from '../types/word/word.types';
+import { type CreateWordData, type WordData } from '../types/word/word.types';
 
 export const useDontknowWords = (userId?: string) => {
-  const [dontknowWords, setDontknowWords] = useState<DontknowWord[]>([]);
+  const [dontknowWords, setDontknowWords] = useState<WordData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,12 +57,12 @@ export const useDontknowWords = (userId?: string) => {
           console.log('실시간 변경:', payload);
 
           if (payload.eventType === 'INSERT') {
-            setDontknowWords(prev => [payload.new as DontknowWord, ...prev]);
+            setDontknowWords(prev => [payload.new as WordData, ...prev]);
           } else if (payload.eventType === 'UPDATE') {
             setDontknowWords(prev =>
               prev.map(dontknowWord =>
                 dontknowWord.id === payload.new.id
-                  ? (payload.new as DontknowWord)
+                  ? (payload.new as WordData)
                   : dontknowWord,
               ),
             );
@@ -84,7 +81,7 @@ export const useDontknowWords = (userId?: string) => {
   }, [userId]);
 
   // Todo 추가
-  const addDontknowWord = async (dontknowWordData: CreateDontknowWordData) => {
+  const addDontknowWord = async (dontknowWordData: CreateWordData) => {
     if (!userId) return;
 
     try {

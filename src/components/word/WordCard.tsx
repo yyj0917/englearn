@@ -1,7 +1,10 @@
-import { type DontknowWord } from '../../types/word/word.types';
+import { type WordData } from '../../types/word/word.types';
 
 interface WordCardProps {
-  word: Pick<DontknowWord, 'word_en' | 'word_kr' | 'comment' | 'created_at'>;
+  word: Pick<
+    WordData,
+    'word_en' | 'word_kr' | 'comment' | 'created_at' | 'major_name'
+  >;
 }
 
 export function WordCard({ word }: WordCardProps) {
@@ -23,7 +26,9 @@ export function WordCard({ word }: WordCardProps) {
         )}
       </ul>
       {word.comment && (
-        <p className='text-sm text-gray-500'>💬 {word.comment}</p>
+        <p className='text-sm whitespace-pre-line text-gray-500'>
+          💬 {word.comment}
+        </p>
       )}
     </div>
   );

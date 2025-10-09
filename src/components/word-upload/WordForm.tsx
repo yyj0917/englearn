@@ -1,8 +1,20 @@
-import { useState } from 'react';
-import { type CreateDontknowWordData } from '../../types/word/word.types';
+import { useEffect, useState } from 'react';
+import { supabase } from '../../lib/supabase';
+import { useAuthStore } from '../../store/auth-store';
+import { type CreateWordData } from '../../types/word/word.types';
+
+interface MajorCategory {
+  id: string;
+  major_name: string;
+  created_at: string;
+}
 
 interface WordFormProps {
-  onSubmit: (data: Omit<CreateDontknowWordData, 'user_id'>) => void;
+  onSubmit: (
+    data: Omit<CreateWordData, 'user_id'> & {
+      major_category_id?: string;
+    },
+  ) => void;
   isLoading?: boolean;
   category?: string; // optional initial category (table key)
 }
@@ -12,6 +24,13 @@ export function WordForm({
   isLoading = false,
   category = 'dontknow_word',
 }: WordFormProps) {
+  const userId = useAuthStore(s => s.userId);
+  const [majorCategories, setMajorCategories] = useState<MajorCategory[]>([]);
+  const [selectedMajorCategory, setSelectedMajorCategory] = useState<
+    string | null
+  >(null);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+
   const [formData, setFormData] = useState({
     word_en: '',
     word_kr: '', // comma-separated input; parsed to string[] on submit
@@ -20,6 +39,28 @@ export function WordForm({
   });
 
   const [errors, setErrors] = useState<Partial<typeof formData>>({});
+
+  // Load major categories when component mounts
+  useEffect(() => {
+    const fetchMajorCategories = async () => {
+      if (!userId) return;
+      setLoadingCategories(true);
+      const { data, error } = await supabase
+        .from('major_category')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Failed to fetch major categories:', error);
+      } else {
+        setMajorCategories((data as unknown as MajorCategory[]) ?? []);
+      }
+      setLoadingCategories(false);
+    };
+
+    fetchMajorCategories();
+  }, [userId]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -58,6 +99,11 @@ export function WordForm({
       }
     }
 
+    // Validate major category selection for major words
+    if (formData.category === 'major_word' && !selectedMajorCategory) {
+      newErrors.category = '전공과목을 선택해주세요';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -69,7 +115,9 @@ export function WordForm({
       return;
     }
 
-    const wordData: Omit<CreateDontknowWordData, 'user_id'> = {
+    const wordData: Omit<CreateWordData, 'user_id'> & {
+      major_name?: string;
+    } = {
       word_en: formData.word_en.trim(),
       word_kr: formData.word_kr
         .split(',')
@@ -78,6 +126,9 @@ export function WordForm({
       category: formData.category,
       comment: formData.comment.trim() || undefined,
     };
+    if (formData.category === 'major_word') {
+      wordData.major_name = selectedMajorCategory || undefined;
+    }
 
     onSubmit(wordData);
     handleReset();
@@ -90,6 +141,7 @@ export function WordForm({
       comment: '',
       category,
     });
+    setSelectedMajorCategory(null);
     setErrors({});
   };
 
@@ -162,9 +214,10 @@ export function WordForm({
           <div className='grid grid-cols-2 gap-3'>
             <button
               type='button'
-              onClick={() =>
-                setFormData(prev => ({ ...prev, category: 'dontknow_word' }))
-              }
+              onClick={() => {
+                setFormData(prev => ({ ...prev, category: 'dontknow_word' }));
+                setSelectedMajorCategory(null);
+              }}
               disabled={isLoading}
               className={`rounded-md border px-4 py-3 text-sm font-medium transition-colors ${
                 formData.category === 'dontknow_word'
@@ -176,20 +229,82 @@ export function WordForm({
             </button>
             <button
               type='button'
-              onClick={() =>
-                setFormData(prev => ({ ...prev, category: 'jargon_word' }))
-              }
-              disabled={true}
+              onClick={() => {
+                setFormData(prev => ({ ...prev, category: 'major_word' }));
+                setSelectedMajorCategory(null);
+              }}
               className={`rounded-md border px-4 py-3 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:bg-gray-100 ${
-                formData.category === 'jargon_word'
+                formData.category === 'major_word'
                   ? 'border-blue-600 bg-blue-50 text-blue-700'
                   : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
               } disabled:opacity-50`}
             >
-              전문용어
+              전공 용어
             </button>
           </div>
+          {errors.category && (
+            <p className='mt-1 text-sm text-red-600'>{errors.category}</p>
+          )}
         </div>
+
+        {/* 전공과목 선택 (전공 용어 선택 시에만 표시) */}
+        {formData.category === 'major_word' && (
+          <div>
+            <label className='mb-2 block text-sm font-medium text-gray-700'>
+              전공과목 선택 *
+            </label>
+            {loadingCategories ? (
+              <div className='flex items-center justify-center py-4 text-sm text-gray-500'>
+                전공과목을 불러오는 중...
+              </div>
+            ) : majorCategories.length === 0 ? (
+              <div className='rounded-md border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800'>
+                등록된 전공과목이 없습니다. 마이페이지에서 전공과목을 먼저
+                등록해주세요.
+              </div>
+            ) : (
+              <div className='grid grid-cols-2 gap-2'>
+                {majorCategories.map(category => (
+                  <button
+                    key={category.id}
+                    type='button'
+                    onClick={() =>
+                      setSelectedMajorCategory(category.major_name)
+                    }
+                    disabled={isLoading}
+                    className={`rounded-md border px-3 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:bg-gray-100 ${
+                      selectedMajorCategory === category.major_name
+                        ? 'border-primary bg-primary text-white'
+                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {category.major_name}
+                  </button>
+                ))}
+                <button
+                  type='button'
+                  onClick={() => setSelectedMajorCategory(null)}
+                  disabled={isLoading}
+                  className={`rounded-md border px-3 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:bg-gray-100 ${
+                    selectedMajorCategory === null
+                      ? 'border-primary bg-primary text-white'
+                      : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <span
+                    className={`text-gray-700 ${
+                      selectedMajorCategory === null
+                        ? 'text-white'
+                        : 'text-gray-700'
+                    }`}
+                  >
+                    없음
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* 카테고리 입력 제거: 테이블 선택은 상위 컴포넌트에서 처리 */}
 

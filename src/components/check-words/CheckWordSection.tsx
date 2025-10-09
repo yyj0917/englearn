@@ -2,18 +2,18 @@ import { ListChecks, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/auth-store';
-import { type DontknowWord } from '../../types/word/word.types';
+import { type WordData } from '../../types/word/word.types';
 import { CheckWordCard } from './CheckWordCard';
 
-type TableKey = 'dontknow_word' | 'jargon_word';
+type TableKey = 'dontknow_word' | 'major_word';
 
 export function CheckWordSection() {
-  const [words, setWords] = useState<DontknowWord[]>([]);
+  const [words, setWords] = useState<WordData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const userId = useAuthStore(s => s.userId);
 
-  const [selectedTable] = useState<TableKey>('dontknow_word');
+  const [selectedTable, setSelectedTable] = useState<TableKey>('dontknow_word');
 
   useEffect(() => {
     let isMounted = true;
@@ -37,7 +37,7 @@ export function CheckWordSection() {
       if (error) {
         setError('단어를 불러오지 못했습니다.');
       } else {
-        setWords((data as unknown as DontknowWord[]) ?? []);
+        setWords((data as unknown as WordData[]) ?? []);
       }
       setLoading(false);
     };
@@ -49,10 +49,26 @@ export function CheckWordSection() {
 
   return (
     <section className='space-y-4'>
-      <h2 className='text-primary bg-primary/10 flex w-fit items-center rounded-lg border px-4 py-2 text-xl font-bold'>
-        <ListChecks className='h-6 w-6' />
-        <span className='ml-2'>확인한 단어</span>
-      </h2>
+      <div className='space-y-3'>
+        <h2 className='text-primary bg-primary/10 flex w-fit items-center rounded-lg border px-4 py-2 text-xl font-bold'>
+          <ListChecks className='h-6 w-6' />
+          <span className='ml-2'>확인한 단어</span>
+        </h2>
+        <nav className='flex gap-2'>
+          <button
+            className={`bg-primary/10 w-fit flex-1 rounded-lg border px-4 py-2 text-lg font-semibold ${selectedTable === 'dontknow_word' ? 'bg-primary/10 text-primary border-primary' : 'border-gray-500 bg-white text-gray-500'}`}
+            onClick={() => setSelectedTable('dontknow_word')}
+          >
+            모르는 단어
+          </button>
+          <button
+            className={`bg-primary/10 w-fit flex-1 rounded-lg border px-4 py-2 text-lg font-semibold ${selectedTable === 'major_word' ? 'bg-primary/10 text-primary border-primary' : 'border-gray-500 bg-white text-gray-500'}`}
+            onClick={() => setSelectedTable('major_word')}
+          >
+            전공 용어
+          </button>
+        </nav>
+      </div>
       {loading && (
         <div className='flex-col-center gap-2 py-10 text-blue-600'>
           <Loader2 className='h-6 w-6 animate-spin' />
@@ -68,6 +84,7 @@ export function CheckWordSection() {
             <CheckWordCard
               key={`${w.user_id}-${w.id}`}
               word={w}
+              table={selectedTable}
               onDismiss={() => {
                 setWords(prev => prev.filter(x => x.id !== w.id));
               }}

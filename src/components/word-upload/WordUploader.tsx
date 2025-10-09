@@ -2,7 +2,7 @@ import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/auth-store';
-import { type CreateDontknowWordData } from '../../types/word/word.types';
+import { type CreateWordData } from '../../types/word/word.types';
 import { WordForm } from './WordForm';
 
 interface UploadState {
@@ -16,12 +16,14 @@ export function WordUploader() {
   });
   const userId = useAuthStore(s => s.userId);
   const isAuthenticated = useMemo(() => Boolean(userId), [userId]);
-  const [targetTable] = useState<'dontknow_word' | 'jargon_word'>(
+  const [targetTable] = useState<'dontknow_word' | 'major_word'>(
     'dontknow_word',
   );
 
   const handleWordSubmit = async (
-    wordData: Omit<CreateDontknowWordData, 'user_id'>,
+    wordData: Omit<CreateWordData, 'user_id'> & {
+      major_category_id?: string;
+    },
   ) => {
     setUploadState({ status: 'uploading' });
 
@@ -35,14 +37,19 @@ export function WordUploader() {
       }
 
       const target = wordData.category ?? targetTable;
+      const insertData: any = {
+        ...wordData,
+        user_id: userId,
+      };
+
+      // Add major_category_id for major words
+      if (target === 'major_word' && wordData.major_category_id) {
+        insertData.major_category_id = wordData.major_category_id;
+      }
+
       const { error } = await supabase
         .from(target)
-        .insert([
-          {
-            ...wordData,
-            user_id: userId,
-          },
-        ])
+        .insert([insertData])
         .select();
 
       if (error) {
@@ -99,7 +106,7 @@ export function WordUploader() {
   };
 
   return (
-    <div className='flex-col-center mx-auto h-full w-full max-w-2xl gap-2 p-6'>
+    <div className='flex-col-center mx-auto h-auto w-full max-w-2xl gap-2 px-6 py-10'>
       {/* 상태 메시지 */}
       {renderStatusMessage() && (
         <div className='mb-6 rounded-lg bg-gray-50 p-4'>

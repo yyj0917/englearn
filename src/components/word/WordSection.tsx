@@ -1,10 +1,10 @@
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { type DontknowWord } from '../../types/word/word.types';
+import { type WordData } from '../../types/word/word.types';
 import { WordCard } from './WordCard';
 
-type TableKey = 'dontknow_word' | 'jargon_word';
+type TableKey = 'dontknow_word' | 'major_word';
 
 interface WordSectionProps {
   title?: string;
@@ -15,7 +15,7 @@ export function WordSection({
   title = '최근 단어',
   table = 'dontknow_word',
 }: WordSectionProps) {
-  const [words, setWords] = useState<DontknowWord[]>([]);
+  const [words, setWords] = useState<WordData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +33,7 @@ export function WordSection({
       if (error) {
         setError('단어를 불러오지 못했습니다.');
       } else {
-        setWords((data as unknown as DontknowWord[]) ?? []);
+        setWords((data as unknown as WordData[]) ?? []);
       }
       setLoading(false);
     };
