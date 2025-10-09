@@ -62,7 +62,9 @@ export function WordCard({
         )}
       </ul>
       {word.comment && (
-        <p className='text-sm text-gray-500'>💬 {word.comment}</p>
+        <div className='text-sm break-words whitespace-pre-wrap text-gray-500'>
+          💬 {word.comment}
+        </div>
       )}
       <button
         className='bg-primary/10 text-primary border-primary hover:bg-primary/20 mt-4 ml-auto flex w-fit cursor-pointer items-center gap-1 rounded-lg border px-2.5 py-1.5'
