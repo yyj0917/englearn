@@ -1,4 +1,4 @@
-import { Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/auth-store';
@@ -13,11 +13,16 @@ export function WordSection() {
   const [words, setWords] = useState<WordData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const userId = useAuthStore(s => s.userId);
 
   const [selectedTable, setSelectedTable] = useState<TableKey>('dontknow_word');
   const [majorCategories, setMajorCategories] = useState<MajorCategory[]>([]);
   const [selectedMajor, setSelectedMajor] = useState<string>('all');
+
+  const itemsPerPage = 20;
+  const maxVisiblePages = 10;
 
   const query = useSearchStore(s => s.query)
     .trim()
@@ -31,27 +36,52 @@ export function WordSection() {
       if (!userId) {
         if (!isMounted) return;
         setWords([]);
+        setTotalCount(0);
         setLoading(false);
         return;
       }
-      let query = supabase
+
+      // First, get total count
+      let countQuery = supabase
+        .from(selectedTable)
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId);
+
+      if (selectedTable === 'dontknow_word') {
+        countQuery = countQuery.eq('is_checked', false);
+      }
+
+      if (selectedTable === 'major_word' && selectedMajor !== 'all') {
+        countQuery = countQuery.eq('major_name', selectedMajor);
+      }
+
+      const { count, error: countError } = await countQuery;
+      if (countError) {
+        console.error('Count error:', countError);
+      } else {
+        setTotalCount(count || 0);
+      }
+
+      // Then, get paginated data
+      const offset = (currentPage - 1) * itemsPerPage;
+      let dataQuery = supabase
         .from(selectedTable)
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-        .limit(20);
+        .range(offset, offset + itemsPerPage - 1);
 
       // Only show unchecked for unknown words list
       if (selectedTable === 'dontknow_word') {
-        query = query.eq('is_checked', false);
+        dataQuery = dataQuery.eq('is_checked', false);
       }
 
       // Filter by selected major when viewing major words
       if (selectedTable === 'major_word' && selectedMajor !== 'all') {
-        query = query.eq('major_name', selectedMajor);
+        dataQuery = dataQuery.eq('major_name', selectedMajor);
       }
 
-      const { data, error } = await query;
+      const { data, error } = await dataQuery;
       if (!isMounted) return;
       if (error) {
         setError('단어를 불러오지 못했습니다.');
@@ -65,7 +95,7 @@ export function WordSection() {
     return () => {
       isMounted = false;
     };
-  }, [selectedTable, userId, selectedMajor]);
+  }, [selectedTable, userId, selectedMajor, currentPage]);
 
   const filtered = useMemo(() => {
     if (!query) return words;
@@ -77,6 +107,43 @@ export function WordSection() {
       return en.includes(query) || kr.includes(query);
     });
   }, [words, query]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedTable, selectedMajor]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
+  const startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+  const adjustedStartPage = Math.max(1, endPage - maxVisiblePages + 1);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handleJumpToPage = (direction: 'prev' | 'next') => {
+    if (direction === 'prev') {
+      const newPage = Math.max(1, currentPage - maxVisiblePages);
+      setCurrentPage(newPage);
+    } else {
+      const newPage = Math.min(totalPages, currentPage + maxVisiblePages);
+      setCurrentPage(newPage);
+    }
+  };
   // Load user's major categories when switching to major_word
   useEffect(() => {
     let isMounted = true;
@@ -167,6 +234,88 @@ export function WordSection() {
               }}
             />
           ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && !loading && !error && (
+        <div className='flex items-center justify-center gap-2 pt-6'>
+          {/* Previous button */}
+          <button
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            className={`flex items-center gap-1 rounded-lg border px-3 py-2 text-sm ${
+              currentPage === 1
+                ? 'cursor-not-allowed border-gray-300 bg-gray-100 text-gray-400'
+                : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <ChevronLeft className='h-4 w-4' />
+            이전
+          </button>
+
+          {/* Jump to previous range */}
+          {currentPage > maxVisiblePages && (
+            <>
+              <button
+                onClick={() => handleJumpToPage('prev')}
+                className='rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50'
+              >
+                ...
+              </button>
+            </>
+          )}
+
+          {/* Page numbers */}
+          {Array.from({ length: endPage - adjustedStartPage + 1 }, (_, i) => {
+            const pageNum = adjustedStartPage + i;
+            return (
+              <button
+                key={pageNum}
+                onClick={() => handlePageChange(pageNum)}
+                className={`rounded-lg border px-3 py-2 text-sm ${
+                  currentPage === pageNum
+                    ? 'border-primary bg-primary text-white'
+                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                {pageNum}
+              </button>
+            );
+          })}
+
+          {/* Jump to next range */}
+          {currentPage < totalPages - maxVisiblePages && (
+            <>
+              <button
+                onClick={() => handleJumpToPage('next')}
+                className='rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50'
+              >
+                ...
+              </button>
+            </>
+          )}
+
+          {/* Next button */}
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className={`flex items-center gap-1 rounded-lg border px-3 py-2 text-sm ${
+              currentPage === totalPages
+                ? 'cursor-not-allowed border-gray-300 bg-gray-100 text-gray-400'
+                : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            다음
+            <ChevronRight className='h-4 w-4' />
+          </button>
+        </div>
+      )}
+
+      {/* Page info */}
+      {totalCount > 0 && !loading && !error && (
+        <div className='pt-2 text-center text-sm text-gray-500'>
+          {currentPage} / {totalPages} 페이지 ({totalCount}개 단어)
         </div>
       )}
     </section>
