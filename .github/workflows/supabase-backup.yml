@@ -2,7 +2,7 @@ name: Supabase DB Backup
 
 on:
   schedule:
-    - cron: '0 0 * * 1'
+    - cron: '0 0 * * 1' # 매주 월요일 00:00 UTC
   workflow_dispatch:
 
 jobs:
@@ -13,28 +13,24 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install PostgreSQL 17 client
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client-17
+      # 더 이상 postgresql-client 설치 안 함
 
-      - name: Check pg_dump version
-        run: pg_dump --version
-
-      - name: Run pg_dump
+      - name: Run pg_dump using Postgres 17 docker image
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
           FILE="supabase-backup-$TIMESTAMP.dump"
 
-          echo "Running pg_dump..."
-          pg_dump \
-            --format=custom \
-            --no-owner \
-            --no-acl \
-            "$SUPABASE_DB_URL" \
-            -f "$FILE"
+          echo "Running pg_dump in postgres:17 container..."
+
+          # 현재 디렉토리($PWD)를 컨테이너의 /backup 에 마운트
+          docker run --rm \
+            -v "$PWD:/backup" \
+            -w /backup \
+            -e SUPABASE_DB_URL="$SUPABASE_DB_URL" \
+            postgres:17 \
+            bash -c "pg_dump --format=custom --no-owner --no-acl \"\$SUPABASE_DB_URL\" -f \"$FILE\""
 
           echo "BACKUP_FILE=$FILE" >> $GITHUB_ENV
 
